@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Plate Management</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --primary-color: #4a89dc;
+            --danger-color: #e74c3c;
+            --success-color: #1ab394;
+            --border-color: #444;
+            --input-bg: #333;
+            --hover-color: #3a3a3a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .panels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (min-width: 992px) {
+            .panels {
+                flex-direction: row;
+            }
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            flex: 1;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 35px;
+            top: -3px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 34px;
+            transition: color 0.2s;
+        }
+
+        .clear-search-btn:hover {
+            color: #777;
+        }
+
+        .clear-search-btn:focus {
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            color: #777;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        #search-input {
+            padding-right: 30px; /* Space for the clear button */
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #333;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-temporary {
+            background-color: #f39c12;
+            color: #fff;
+        }
+
+        .badge-long-term {
+            background-color: var(--success-color);
+            color: #fff;
+        }
+
+        .add-form {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        textarea.form-control {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b7dd8;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c44133;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .status-bar {
+            background-color: #333;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .last-updated {
+            color: #aaa;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+
+            .btn {
+                padding: 8px 15px;
+            }
+        }
+
+        /* For very small screens */
+        @media (max-width: 480px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+
+        /* Ensure inputs are mobile-friendly */
+        input[inputmode="numeric"] {
+            font-size: 16px; /* Prevent mobile zooming */
+        }
+
+        /* For iOS specifically */
+        @supports (-webkit-touch-callout: none) {
+            input[inputmode="numeric"] {
+                font-size: 16px;
+                padding: 12px 15px;
+            }
+        }
+
+        .gate-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .gate-btn {
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+
+        .gate-btn.gate-open {
+            background-color: #90EE90;  /* Light green */
+            color: #006400;  /* Dark green text */
+        }
+
+        .gate-btn.gate-closed {
+            background-color: #A0A0A0;  /* Light red */
+            color: #000000;  /* Dark red text */
+        }
+
+        /* Adjust main container to prevent content from being hidden behind gates */
+        .container {
+            padding-bottom: 80px;  /* Make space for gate controls */
+        }
+
+        .logs-link {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4a89dc;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .logs-link:hover {
+            background-color: #3b7dd8;
+        }
+
+        .logs-link i {
+            margin-right: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panels">
+            <div class="panel">
+                <h2><i class="fas fa-search"></i> Поиск по номеру</h2>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input"
+                               placeholder="Поиск по гос. номеру авто..."
+                               inputmode="numeric"
+                               pattern="[0-9]*">
+                        <button id="clear-search" class="clear-search-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                <div class="table-responsive">
+                    <table id="search-results">
+                        <thead>
+                            <tr>
+                                <th>Тип</th>
+                                <th>Дом</th>
+                                <th>Номер</th>
+                                <th>Описание</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="empty-row">
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-search"></i>
+                                    <div>Введите не менее 3 цифр для поиска</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+
+                <div class="add-form">
+                    <h3><i class="fas fa-plus"></i> Добавить временный пропуск</h3>
+                    <div class="form-group">
+                        <label for="house-number">Номер дома</label>
+                        <input type="text" id="house-number" class="form-control"
+                               placeholder="например: 67"
+                               maxlength="20"
+                               inputmode="numeric"
+                               pattern="[0-9]*">
+                    </div>
+                    <div class="form-group">
+                        <label for="plate-number">Номер авто (3 цифры)</label>
+                        <input type="text" id="plate-number" class="form-control"
+                               placeholder="например: 154"
+                               maxlength="3"
+                               inputmode="numeric"
+                               pattern="\d{3}">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Описание</label>
+                        <textarea id="description" class="form-control" placeholder="Серый тигуан, такси яндекс, доставка озон..." maxlength="200"></textarea>
+                    </div>
+                    <button id="add-plate" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Добавить
+                    </button>
+                </div>
+                <h2><i class="fas fa-clock"></i> Временные пропуска</h2>
+                <div class="table-responsive">
+                    <table id="temporary-plates">
+                        <thead>
+                            <tr>
+                                <th>Дом</th>
+                                <th>Номер</th>
+                                <th>Описание</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="empty-row">
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <div>Временных пропусков еще не добавлено</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <a href="/plate_logs" class="logs-link">
+                    <i class="fas fa-history"></i> История проездов
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="gate-controls">
+        <button class="gate-btn" data-gate="1" onclick="toggleGate(1)">
+            Въезд
+        </button>
+        <button class="gate-btn" data-gate="2" onclick="toggleGate(2)">
+            Выезд
+        </button>
+        <button class="gate-btn" data-gate="3" onclick="toggleGate(3)">
+            Калитка
+        </button>
+    </div>
+
+    <script>
+            // Function to load temporary plates
+            function loadTemporaryPlates() {
+                $.get('/get_temporary_plates', function(data) {
+                    const platesBody = $('#temporary-plates tbody');
+                    // Clear existing rows completely
+                    platesBody.empty();
+
+                    if (data.plates.length === 0) {
+                        platesBody.append(`
+                            <tr class="empty-row">
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <div>Временных пропусков еще не добавили</div>
+                                </td>
+                            </tr>
+                        `);
+                        return;
+                    }
+
+                    data.plates.forEach(plate => {
+                        platesBody.append(`
+                            <tr data-id="${plate.id}">
+                                <td>${plate.house_number}</td>
+                                <td><b>${plate.plate_number}</b></td>
+                                <td>${plate.description || '-'}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="deletePlate(${plate.id})">
+                                        <i class="fas fa-trash-alt"></i> Удалить
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }).fail(function() {
+                    console.error("Error loading temporary plates");
+                    alert('Ошибка. Нужно обновить страницу.');
+                });
+            }
+
+
+        $(document).ready(function() {
+            // Load temporary plates on page load
+            loadTemporaryPlates();
+
+            loadGateStates();
+
+            // Refresh gate states every 1 second
+            setInterval(loadGateStates, 1000);
+            setInterval(loadTemporaryPlates, 3600000);
+
+            const $searchInput = $('#search-input');
+            const $clearButton = $('#clear-search');
+
+            // Show/hide clear button based on input
+            function toggleClearButton() {
+                $clearButton.toggle($searchInput.val().length > 0);
+            }
+
+            // Clear search field
+            $clearButton.click(function() {
+                $searchInput.val('').trigger('input');
+                toggleClearButton();
+                $searchInput.focus();
+            });
+
+            // Initial state
+            toggleClearButton();
+
+            // Search functionality
+            // In the search functionality section, replace the current code with this:
+            $('#search-input').on('input', function() {
+                toggleClearButton();
+                const searchTerm = $(this).val().trim();
+                const resultsBody = $('#search-results tbody');
+
+                // Clear existing results
+                resultsBody.empty();
+
+                // Only search if at least 3 characters entered
+                if (searchTerm.length >= 3) {
+                    $.get('/search', {term: searchTerm}, function(data) {
+                        if (data.temporary.length === 0 && data.long_term.length === 0) {
+                            resultsBody.append(`
+                                <tr class="empty-row">
+                                    <td colspan="4" class="empty-state">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <div>Номера похожие на "${searchTerm}" не найдены</div>
+                                    </td>
+                                </tr>
+                            `);
+                        } else {
+                            // Add matching plates
+                            [...data.temporary, ...data.long_term].forEach(plate => {
+                                const badgeType = plate.type === 'temporary' ? 'badge-temporary' : 'badge-long-term';
+                                const badgeText = plate.type === 'temporary' ? 'ВРЕМ' : 'Е-ПОС';
+
+                                resultsBody.append(`
+                                    <tr>
+                                        <td><span class="badge ${badgeType}">${badgeText}</span></td>
+                                        <td>${plate.house_number}</td>
+                                        <td><b>${plate.plate_number}</b></td>
+                                        <td>${plate.type === 'temporary' ? (plate.description || '-') : '-'}</td>
+                                    </tr>
+                                `);
+                            });
+                        }
+                    });
+                } else if (searchTerm.length < 3) {
+                    // Show initial empty state when search is cleared
+                    resultsBody.append(`
+                        <tr class="empty-row">
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-search"></i>
+                                <div>Для поиска нужно ввести 3 цифры</div>
+                            </td>
+                        </tr>
+                    `);
+                }
+            });
+
+            // Add input validation for plate number (3 digits only)
+            $('#plate-number').on('input', function() {
+                let value = $(this).val();
+                // Remove any non-digit characters
+                value = value.replace(/\D/g, '');
+                // Limit to 3 characters
+                value = value.substring(0, 3);
+                $(this).val(value);
+            });
+
+            // Updated add plate function
+            $('#add-plate').click(function() {
+                const houseNumber = $('#house-number').val().trim();
+                const plateNumber = $('#plate-number').val().trim();
+                const description = $('#description').val().trim();
+
+                // Validate inputs
+                if (!houseNumber) {
+                    alert('Номер дома обязателен!');
+                    return;
+                }
+
+                if (!plateNumber || plateNumber.length !== 3 || !/^\d+$/.test(plateNumber)) {
+                    alert('Нужно ввести 3 цифры гос. номера!');
+                    return;
+                }
+
+                const $addButton = $(this);
+                $addButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Добавляю...');
+
+                $.post('/add_temporary', {
+                    house_number: houseNumber,
+                    plate_number: plateNumber,
+                    description: description
+                }, function(response) {
+                    if (response.success) {
+                        // Clear form
+                        $('#house-number, #plate-number, #description').val('');
+                        // Reload the entire table fresh
+                        loadTemporaryPlates();
+                    } else {
+                        alert(response.error || 'Error adding plate');
+                    }
+                }).fail(function() {
+                    alert('Не получилось добавить пропуск, попробуйте еще раз');
+                }).always(function() {
+                    $addButton.prop('disabled', false).html('<i class="fas fa-save"></i> Добавить');
+                });
+            });
+
+        });
+
+        // Delete plate function (needs to be global for inline onclick)
+        function deletePlate(plateId) {
+            if (confirm('Уверены что хотите удалить этот номер?')) {
+                const $deleteButton = $(`tr[data-id="${plateId}"]`).find('button');
+                $deleteButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.ajax({
+                    url: `/delete_temporary/${plateId}`,
+                    method: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove the deleted row immediately
+                            $(`tr[data-id="${plateId}"]`).fadeOut(300, function() {
+                                $(this).remove();
+
+                                // Check if table is now empty and show empty state if needed
+                                if ($('#temporary-plates tbody tr').length === 0) {
+                                    $('#temporary-plates tbody').append(`
+                                        <tr class="empty-row">
+                                            <td colspan="4" class="empty-state">
+                                                <i class="fas fa-plus-circle"></i>
+                                                <div>Временных пропусков пока что нет.</div>
+                                            </td>
+                                        </tr>
+                                    `);
+                                }
+                            });
+                        } else {
+                            alert('Error deleting plate');
+                            $deleteButton.prop('disabled', false).html('<i class="fas fa-trash-alt"></i> Delete');
+                        }
+                    },
+                    error: function() {
+                        alert('Error deleting plate');
+                        $deleteButton.prop('disabled', false).html('<i class="fas fa-trash-alt"></i> Delete');
+                    }
+                });
+            }
+        }
+
+        // Load initial gate states
+        function loadGateStates() {
+            $.get('/api/gates', function(data) {
+                for (const [gateId, gateData] of Object.entries(data)) {
+                    const btn = $(`.gate-btn[data-gate="${gateId}"]`);
+                    btn.removeClass('gate-open gate-closed');
+                    btn.addClass(gateData.state ? 'gate-open' : 'gate-closed');
+                }
+            }).fail(function() {
+                console.error("Error loading gate states");
+            });
+        }
+
+        // Toggle gate state
+        function toggleGate(gateId) {
+            const btn = $(`.gate-btn[data-gate="${gateId}"]`);
+            const currentState = btn.hasClass('gate-open');
+            const newState = !currentState;
+
+            btn.prop('disabled', true);
+
+            $.ajax({
+                url: `/api/gates/${gateId}`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({state: newState}),
+                success: function(response) {
+                    if (response.success) {
+                        btn.removeClass('gate-open gate-closed');
+                        btn.addClass(newState ? 'gate-open' : 'gate-closed');
+                    } else {
+                        alert(response.error || 'Error changing gate state');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка сети - попробуйте еще раз.');
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

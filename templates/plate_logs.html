@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История проездов</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --primary-color: #4a89dc;
+            --border-color: #444;
+            --input-bg: #333;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .filter-container {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .filter-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .logs-table th, .logs-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logs-table th {
+            background-color: #333;
+            font-weight: bold;
+        }
+        
+        .logs-table tr:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        .access-granted {
+            color: #90EE90;
+        }
+        
+        .access-denied {
+            color: #FF7F7F;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-history"></i> История проездов</h1>
+        
+        <div class="filter-container">
+            <input type="text" id="plate-filter" class="filter-input" 
+                   placeholder="Поиск по номеру автомобиля...">
+            <button id="filter-btn" class="filter-btn">
+                <i class="fas fa-filter"></i> Найти
+            </button>
+        </div>
+        
+        <table class="logs-table">
+            <thead>
+                <tr>
+                    <th>Дата и время</th>
+                    <th>Номер авто</th>
+                    <th>Шлагбаум</th>
+                    <th>Камера</th>
+                    <th>Результат</th>
+                    <th>Источник</th>
+                </tr>
+            </thead>
+            <tbody id="logs-body">
+                <!-- Logs will be loaded here -->
+            </tbody>
+        </table>
+        
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fas fa-database"></i>
+            <div>Ничего не найдено</div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Load logs on page load
+            loadLogs();
+            
+            // Filter button click handler
+            $('#filter-btn').click(function() {
+                loadLogs();
+            });
+            
+            // Also filter when pressing Enter in the input field
+            $('#plate-filter').keypress(function(e) {
+                if (e.which === 13) { // Enter key
+                    loadLogs();
+                }
+            });
+        });
+        
+        function loadLogs() {
+            const plateFilter = $('#plate-filter').val().trim();
+            
+            $.get('/api/plate_logs', {plate_filter: plateFilter}, function(data) {
+                const logsBody = $('#logs-body');
+                logsBody.empty();
+                
+                if (data.logs.length === 0) {
+                    $('#empty-state').show();
+                } else {
+                    $('#empty-state').hide();
+                    data.logs.forEach(log => {
+                        const date = new Date(log.recognition_time);
+                        const formattedDate = date.toLocaleString();
+                        
+                        logsBody.append(`
+                            <tr>
+                                <td>${formattedDate}</td>
+                                <td>${log.plate_number}</td>
+                                <td>${log.gate_id == 1 ? 'Въезд' : 'Выезд'}</td>
+                                <td>Камера ${log.camera_id}</td>
+                                <td class="${log.access_granted ? 'access-granted' : 'access-denied'}">
+                                    ${log.access_granted ? 'ОТКРЫТО' : 'ЗАКРЫТО'}
+                                </td>
+                                <td>${log.source || '-'}</td>
+                            </tr>
+                        `);
+                    });
+                }
+            }).fail(function() {
+                alert('Ошибка при загрузке истории');
+            });
+        }
+    </script>
+</body>
+</html>
